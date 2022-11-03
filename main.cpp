@@ -1,8 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <stdlib.h>
+#include <time.h>
 
 #define WIDTH 1000
-#define HEIGHT 800
+#define HEIGHT 1000
 
 #include "SFML/Graphics.hpp"
 
@@ -25,11 +27,11 @@ public:
         this->x = x;
         this->y = y;
     }
-    int get_x()
+    int get_x() const
     {
         return this->x;
     }
-    int get_y()
+    int get_y() const
     {
         return this->y;
     }
@@ -171,8 +173,96 @@ public:
         new_node->parent = tmp2;
         return new_node;
     }
+
+
+    void query_range(Node * node, Point a, Point b, std::vector<Point> & points)
+    {
+        // If the point is inside
+        if (node->get_point().get_x() >= a.get_x() && node->get_point().get_y() >= a.get_y() &&
+        node->get_point().get_x() <= b.get_x() && node->get_point().get_y() <= b.get_y())
+        {
+            points.push_back(node->get_point());
+        }
+
+        Point c(a.get_x(),b.get_y());
+        Point d(b.get_x(),a.get_y());
+        if (b.get_x() >= node->get_point().get_x() && b.get_y() >= node->get_point().get_y() && node->north_east)
+        {
+            this->query_range(node->north_east, a, b, points);
+        }
+        if (d.get_x() >= node->get_point().get_x() && d.get_y() < node->get_point().get_y() && node->south_east)
+        {
+            this->query_range(node->south_east, a, b, points);
+        }
+        if (c.get_x() < node->get_point().get_x() && b.get_y() >= node->get_point().get_y() && node->north_west)
+        {
+            this->query_range(node->north_west, a, b, points);
+        }
+        if (a.get_x() < node->get_point().get_x() && a.get_y() < node->get_point().get_y() && node->south_west)
+        {
+             this->query_range(node->south_west, a, b, points);
+        }
+
+        /*
+        // northeast
+        if (b.get_x() >= node->get_point().get_x() && b.get_y() >= node->get_point().get_y())
+        {
+            if (a.get_x() >= node->get_point().get_x() && a.get_y() >= node->get_point().get_y())
+                this->query_range(node->north_east, a, b, points);
+            else if (a.get_x() >= node->get_point().get_x() && a.get_y() < node->get_point().get_y())
+                this->query_range(node->north_east, Point(a.get_x(), node->get_point().get_y()), b, points);
+            else if (a.get_x() < node->get_point().get_x() && a.get_y() >= node->get_point().get_y())
+                this->query_range(node->north_east, Point(node->point.get_x(), a.get_y()), b, points);
+            else 
+                this->query_range(node->north_east, Point(node->point.get_x(), node->point.get_y()), b, points);
+        }
+        //southeast
+        if (d.get_x() >= node->get_point().get_x() && d.get_y() < node->get_point().get_y())
+        {
+            if (c.get_x() >= node->get_point().get_x() && c.get_y() < node->get_point().get_y())
+                this->query_range(node->north_east, a, b, points);
+            else if (c.get_x() < node->get_point().get_x() && c.get_y() < node->get_point().get_y())
+                this->query_range(node->north_east, Point(c.get_x(), node->get_point().get_y()), b, points);
+            else if (c.get_x() < node->get_point().get_x() && c.get_y() >= node->get_point().get_y())
+                this->query_range(node->north_east, Point(node->point.get_x(), a.get_y()), b, points);
+            else 
+                this->query_range(node->north_east, Point(node->point.get_x(), node->point.get_y()), b, points);
+        }
+        // northwest
+        if (c.get_x() < node->get_point().get_x() && b.get_y() >= node->get_point().get_y())
+        {
+            if (a.get_x() >= node->get_point().get_x() && a.get_y() >= node->get_point().get_y())
+                this->query_range(node->north_east, a, b, points);
+            else if (a.get_x() >= node->get_point().get_x() && a.get_y() < node->get_point().get_y())
+                this->query_range(node->north_east, Point(a.get_x(), node->get_point().get_y()), b, points);
+            else if (a.get_x() < node->get_point().get_x() && a.get_y() >= node->get_point().get_y())
+                this->query_range(node->north_east, Point(node->point.get_x(), a.get_y()), b, points);
+            else 
+                this->query_range(node->north_east, Point(node->point.get_x(), node->point.get_y()), b, points);
+        }
+        // southwest
+        if (a.get_x() < node->get_point().get_x() && a.get_y() < node->get_point().get_y())
+        {
+            if (a.get_x() >= node->get_point().get_x() && a.get_y() >= node->get_point().get_y())
+                this->query_range(node->north_east, a, b, points);
+            else if (a.get_x() >= node->get_point().get_x() && a.get_y() < node->get_point().get_y())
+                this->query_range(node->north_east, Point(a.get_x(), node->get_point().get_y()), b, points);
+            else if (a.get_x() < node->get_point().get_x() && a.get_y() >= node->get_point().get_y())
+                this->query_range(node->north_east, Point(node->point.get_x(), a.get_y()), b, points);
+            else 
+                this->query_range(node->north_east, Point(node->point.get_x(), node->point.get_y()), b, points);
+        }
+        */
+    }
     
     
+    std::vector<Point> query_range_search(Point a, Point b)
+    {
+        std::vector<Point> points;
+        this->query_range(this->root,a,b,points);
+        return points;
+    }
+
     void print_pre_order(Node * node)
     {
         if (!node) return;
@@ -188,21 +278,21 @@ public:
     }
 };
 
-int main() {
-    
+int main() 
+{
+    srand(time(0));
     QuadTree my_tree;
-    int T; std::cin >> T;
+    int T = 50;
     std::vector<sf::VertexArray> lines;
     std::vector<sf::CircleShape> points;
     for (int i = 0; i < T; i++)
     {
         int j = 0;
-        int x, y;
-        std::cin >> x >> y;
+        int x = rand() % 1000 + 1, y = rand() % 1000;
         Node * mi_nodo = my_tree.insert(x,y);
 
         sf::CircleShape point;
-        point.setPosition(mi_nodo->get_point().get_x() - 5,HEIGHT - mi_nodo->get_point().get_y() - 5);
+        point.setPosition(mi_nodo->get_point().get_x() - 5, mi_nodo->get_point().get_y() - 5);
         point.setRadius(5);
         point.setFillColor(sf::Color::Red);
         points.push_back(point);
@@ -210,12 +300,12 @@ int main() {
         Node * nodo = mi_nodo->get_parent();
         if (!nodo) continue;
         int px = nodo->get_point().get_x();
-        int py = HEIGHT - nodo->get_point().get_y();
+        int py = nodo->get_point().get_y();
 
         int x1 = nodo->get_right_up().get_x();
-        int y1 = HEIGHT - nodo->get_right_up().get_y();
+        int y1 = nodo->get_right_up().get_y();
         int x2 = nodo->get_left_down().get_x();
-        int y2 = HEIGHT - nodo->get_left_down().get_y();
+        int y2 = nodo->get_left_down().get_y();
 
         sf::VertexArray line1(sf::LineStrip, 2);
         line1[0].position = sf::Vector2f(px, y2);
@@ -238,14 +328,56 @@ int main() {
     }
 
     my_tree.print_pre_order();
+    int ax = 100, ay = 100, bx = 800, by = 800;
+
+    std::vector<Point> range = my_tree.query_range_search(Point(ax,ay),Point(bx,by));
+    
+    sf::VertexArray range_border1(sf::LineStrip, 2);
+    sf::VertexArray range_border2(sf::LineStrip, 2);
+    sf::VertexArray range_border3(sf::LineStrip, 2);
+    sf::VertexArray range_border4(sf::LineStrip, 2);
+    
+    range_border1[0].position = sf::Vector2f(ax,ay);
+    range_border1[1].position = sf::Vector2f(ax,by);
+    range_border1[0].color = sf::Color::Green;
+    range_border1[1].color = sf::Color::Green;
+
+    range_border2[0].position = sf::Vector2f(ax,ay);
+    range_border2[1].position = sf::Vector2f(bx,ay);
+    range_border2[0].color = sf::Color::Green;
+    range_border2[1].color = sf::Color::Green;
+
+    range_border3[0].position = sf::Vector2f(ax,by);
+    range_border3[1].position = sf::Vector2f(bx,by);
+    range_border3[0].color = sf::Color::Green;
+    range_border3[1].color = sf::Color::Green;
+
+    range_border4[0].position = sf::Vector2f(bx,by);
+    range_border4[1].position = sf::Vector2f(bx,ay);
+    range_border4[0].color = sf::Color::Green;
+    range_border4[1].color = sf::Color::Green;
+    lines.push_back(range_border1);
+    lines.push_back(range_border2);
+    lines.push_back(range_border3);
+    lines.push_back(range_border4);
+
+
+
+
+    
+    std::cout << "Puntos en rango:\n";
+
+    for (const auto &a : range)
+    {
+        std::cout << a.get_x() << ' ' << a.get_y() << '\n';
+    }
 
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode(1000, 800), "SFML window");
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "QuadTree Visualization");
 
     // Start the game loop
     while (window.isOpen()) 
     {
-
         // Process events
         sf::Event event;
         while (window.pollEvent(event))
